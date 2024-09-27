@@ -33,14 +33,14 @@ public class StyleChecker
         this.logger = logger;
     }
 
-    public async Task Check(CancellationToken cancellationToken)
+    public async Task<int> Check(CancellationToken cancellationToken)
     {
         RuleSetFilePath = CommandHelper.GetAbsoluteOrDefaultFilePath(RuleSetFilePath, "./stylecop.ruleset");
         StyleCopJsonFilePath = CommandHelper.GetAbsoluteOrDefaultFilePath(StyleCopJsonFilePath, "./stylecop.json");
 
         if (!Targets.Any())
         {
-            return;
+            return 1;
         }
 
         this.logger.LogDebug("Arguments ============================");
@@ -56,10 +56,10 @@ public class StyleChecker
             var targetFileOrDirectory = CommandHelper.GetAbsolutePath(target);
 
             var inputKind = CommandHelper.GetInputKindFromFileOrDirectory(targetFileOrDirectory);
-            if (!inputKind.HasValue) { return; }
+            if (!inputKind.HasValue) { return 1; }
 
             var readableProjects = inputKind.Value.ToReader().ReadAllSourceCodeFiles(targetFileOrDirectory, StyleCopJsonFilePath);
-            if (readableProjects.Length == 0) { return; }
+            if (readableProjects.Length == 0) { return 1; }
 
             projects.AddRange(readableProjects);
         }
@@ -68,7 +68,7 @@ public class StyleChecker
         if (outputKind == OutputKind.Undefined)
         {
             Console.Error.WriteLine($"output format is undefined. -f {OutputFormat}");
-            return;
+            return 1;
         }
 
         var analyzerLoader = new AnalyzerLoader(RuleSetFilePath);
@@ -79,7 +79,19 @@ public class StyleChecker
             analyzerLoader.RuleSets,
             cancellationToken).ConfigureAwait(false);
 
+        int result = 0;
+        foreach (Diagnostic diagnostic in diagnostics)
+        {
+            if (diagnostic.Severity == DiagnosticSeverity.Error)
+            {
+                result = 1;
+                break;
+            }
+        }
+
+
         var writer = outputKind.ToWriter();
         writer.Write(diagnostics);
+        return result;
     }
 }

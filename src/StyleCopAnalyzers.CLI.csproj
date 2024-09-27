@@ -6,7 +6,7 @@
     <LangVersion>10.0</LangVersion>
     <Nullable>enable</Nullable>
     <AssemblyVersion>1.0.1.1</AssemblyVersion>
-    <Version>1.1.0</Version>
+    <Version>1.2.0</Version>
     <PackageId>rookxx.stylecopanalyzers-cli</PackageId>
     <Authors>rookxx</Authors>
     <Title>StyleCop.Analyzers CLI tool</Title>
@@ -24,25 +24,25 @@
     <DefaultItemExcludes>$(DefaultItemExcludes);Sandbox\**</DefaultItemExcludes>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="CommandLineParser" Version="2.9.1"/>
-    <PackageReference Include="Microsoft.Build.Locator" Version="1.4.1"/>
-    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.2.0"/>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.2.0"/>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.2.0"/>
+    <PackageReference Include="CommandLineParser" Version="2.9.1" />
+    <PackageReference Include="Microsoft.Build.Locator" Version="1.4.1" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.2.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.2.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.2.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.2.0"/>
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.2.0" />
     <PackageReference Include="StyleCop.Analyzers.Unstable" Version="1.2.0.435">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="System.Security.Permissions" Version="6.0.0"/>
+    <PackageReference Include="System.Security.Permissions" Version="6.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include=".\stylecop.json" Link="stylecop.json" CopyToOutputDirectory="PreserveNewest"/>
-    <Content Include=".\stylecop.ruleset" Link="stylecop.ruleset" CopyToOutputDirectory="PreserveNewest"/>
+    <Content Include=".\stylecop.json" Link="stylecop.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include=".\stylecop.ruleset" Link="stylecop.ruleset" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="StyleCop.Analyzers">
