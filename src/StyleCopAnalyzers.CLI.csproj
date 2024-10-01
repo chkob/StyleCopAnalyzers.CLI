@@ -5,8 +5,8 @@
     <CodeAnalysisRuleSet>stylecop.ruleset</CodeAnalysisRuleSet>
     <LangVersion>10.0</LangVersion>
     <Nullable>enable</Nullable>
-    <AssemblyVersion>1.0.1.1</AssemblyVersion>
-    <Version>1.2.0</Version>
+    <AssemblyVersion>1.2.2</AssemblyVersion>
+    <Version>1.2.2</Version>
     <PackageId>rookxx.stylecopanalyzers-cli</PackageId>
     <Authors>rookxx</Authors>
     <Title>StyleCop.Analyzers CLI tool</Title>

@@ -110,7 +110,7 @@ public class StyleChecker
         var writer = outputKind.ToWriter(ErrorsOnly);
         writer.Write(diagnostics);
 
-        this.logger.LogDebug("Errors: " + error + ", Warnings: " + warning + ", Infos: " + info);
+        this.logger.LogInformation("Errors: " + error + ", Warnings: " + warning + ", Infos: " + info);
 
         return result;
     }
