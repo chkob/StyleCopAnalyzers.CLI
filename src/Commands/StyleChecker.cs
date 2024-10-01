@@ -18,6 +18,10 @@ public class StyleChecker
     public string StyleCopJsonFilePath { get; set; } = string.Empty;
     [Option('f', "format", Required = false, Default = "text", HelpText = "output format\n    text raw text\n    xml  legacy stylecop xml format")]
     public string OutputFormat { get; set; } = string.Empty;
+
+    [Option('e', "errors-only", Required = false, Default = false, HelpText = "Print only error in output stream.")]
+    public bool ErrorsOnly { get; set; } = false;
+
     [Value(0, MetaName = "sln/csproj file path, directory path or file path")]
     public IEnumerable<string> Targets { get; set; }
 
@@ -47,6 +51,7 @@ public class StyleChecker
         this.logger.LogDebug($"ruleset : {RuleSetFilePath}");
         this.logger.LogDebug($"stylecop.json : {RuleSetFilePath}");
         this.logger.LogDebug($"format : {OutputFormat}");
+        this.logger.LogDebug($"error-only : {ErrorsOnly}");
         this.logger.LogDebug($"check : \n{string.Join("\n", Targets)}");
         this.logger.LogDebug("======================================");
 
@@ -79,19 +84,34 @@ public class StyleChecker
             analyzerLoader.RuleSets,
             cancellationToken).ConfigureAwait(false);
 
+        // calculate result
         int result = 0;
+        long info = 0;
+        long warning = 0;
+        long error = 0;
         foreach (Diagnostic diagnostic in diagnostics)
         {
             if (diagnostic.Severity == DiagnosticSeverity.Error)
             {
                 result = 1;
-                break;
+                error++;
+            }
+            else if (diagnostic.Severity == DiagnosticSeverity.Warning)
+            {
+                warning++;
+            }
+            else if (diagnostic.Severity == DiagnosticSeverity.Info)
+            {
+                info++;
             }
         }
 
 
-        var writer = outputKind.ToWriter();
+        var writer = outputKind.ToWriter(ErrorsOnly);
         writer.Write(diagnostics);
+
+        this.logger.LogDebug("Errors: " + error + ", Warnings: " + warning + ", Infos: " + info);
+
         return result;
     }
 }
