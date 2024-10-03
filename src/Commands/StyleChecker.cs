@@ -47,13 +47,13 @@ public class StyleChecker
             return 1;
         }
 
-        this.logger.LogDebug("Arguments ============================");
-        this.logger.LogDebug($"ruleset : {RuleSetFilePath}");
-        this.logger.LogDebug($"stylecop.json : {RuleSetFilePath}");
-        this.logger.LogDebug($"format : {OutputFormat}");
-        this.logger.LogDebug($"error-only : {ErrorsOnly}");
-        this.logger.LogDebug($"check : \n{string.Join("\n", Targets)}");
-        this.logger.LogDebug("======================================");
+        this.logger.LogInformation("Arguments ============================");
+        this.logger.LogInformation($"ruleset : {RuleSetFilePath}");
+        this.logger.LogInformation($"stylecop.json : {StyleCopJsonFilePath}");
+        this.logger.LogInformation($"format : {OutputFormat}");
+        this.logger.LogInformation($"error-only : {ErrorsOnly}");
+        this.logger.LogInformation($"check : \n{string.Join("\n", Targets)}");
+        this.logger.LogInformation("======================================");
 
         var projects = ImmutableArray.CreateBuilder<Project>();
         foreach (var target in Targets)
@@ -76,7 +76,7 @@ public class StyleChecker
             return 1;
         }
 
-        var analyzerLoader = new AnalyzerLoader(RuleSetFilePath);
+        var analyzerLoader = new AnalyzerLoader(RuleSetFilePath, this.logger);
         var analyzers = analyzerLoader.GetAnalyzers();
         var diagnostics = await CommandHelper.GetAnalyzerDiagnosticsAsync(
             projects.ToImmutable(),

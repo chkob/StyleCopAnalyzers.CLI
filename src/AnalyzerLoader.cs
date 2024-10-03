@@ -19,11 +19,15 @@ public class AnalyzerLoader
 
     private readonly Dictionary<string, ReportDiagnostic> rulesets = new Dictionary<string, ReportDiagnostic>();
 
-    public AnalyzerLoader(string ruleSetFilePath)
+    public AnalyzerLoader(string ruleSetFilePath, ILogger logger)
     {
         if (File.Exists(ruleSetFilePath))
         {
             RuleSet.GetDiagnosticOptionsFromRulesetFile(ruleSetFilePath, out rulesets);
+        }
+        else
+        {
+            logger.LogInformation($"Not found ruleset file {ruleSetFilePath}");
         }
 
         rulesets.Add("AD0001", ReportDiagnostic.Error);

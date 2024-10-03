@@ -31,7 +31,7 @@ public class StyleFixer
     public StyleFixer()
     {
         Targets = Array.Empty<string>();
-        analyzerLoader = new AnalyzerLoader(string.Empty);
+        analyzerLoader = new AnalyzerLoader(string.Empty, this.logger);
     }
 
     private ILogger logger = new SilentLogger();
@@ -43,7 +43,7 @@ public class StyleFixer
 
     public void Initialize()
     {
-        this.analyzerLoader = new AnalyzerLoader(RuleSetFilePath);
+        this.analyzerLoader = new AnalyzerLoader(RuleSetFilePath, this.logger);
         this.allAnalyzers = analyzerLoader.GetAnalyzers();
         this.allCodeFixProviders = analyzerLoader.GetCodeFixProviders();
     }
