@@ -31,7 +31,7 @@ public class StyleFixer
     public StyleFixer()
     {
         Targets = Array.Empty<string>();
-        analyzerLoader = new AnalyzerLoader(string.Empty);
+        analyzerLoader = new AnalyzerLoader(string.Empty, this.logger);
     }
 
     private ILogger logger = new SilentLogger();
@@ -43,19 +43,19 @@ public class StyleFixer
 
     public void Initialize()
     {
-        this.analyzerLoader = new AnalyzerLoader(RuleSetFilePath);
+        this.analyzerLoader = new AnalyzerLoader(RuleSetFilePath, this.logger);
         this.allAnalyzers = analyzerLoader.GetAnalyzers();
         this.allCodeFixProviders = analyzerLoader.GetCodeFixProviders();
     }
 
-    public async Task FixCode(CancellationToken cancellationToken)
+    public async Task<int> FixCode(CancellationToken cancellationToken)
     {
         RuleSetFilePath = CommandHelper.GetAbsoluteOrDefaultFilePath(RuleSetFilePath, "./stylecop.ruleset");
         StyleCopJsonFilePath = CommandHelper.GetAbsoluteOrDefaultFilePath(StyleCopJsonFilePath, "./stylecop.json");
 
         if (!Targets.Any())
         {
-            return;
+            return 1;
         }
 
         this.logger.LogDebug("Arguments ============================");
@@ -72,6 +72,8 @@ public class StyleFixer
 
         Initialize();
 
+        long errorCount = 0;
+
         foreach (var target in Targets)
         {
             var targetFileOrDirectory = CommandHelper.GetAbsolutePath(target);
@@ -87,7 +89,7 @@ public class StyleFixer
                 }
 
                 var projects = inputKind.Value.ToReader().ReadAllSourceCodeFiles(target, StyleCopJsonFilePath);
-                if (projects.IsDefaultOrEmpty) { return; }
+                if (projects.IsDefaultOrEmpty) { return 1; }
 
                 var diagnostics = await CommandHelper.GetAnalyzerDiagnosticsAsync(
                         projects,
@@ -122,8 +124,18 @@ public class StyleFixer
                 catch (Exception exception)
                 {
                     Console.WriteLine(exception);
+                    errorCount++;
                 }
             }
+        }
+
+        if (errorCount > 0)
+        {
+            return 1;
+        }
+        else
+        {
+            return 0;
         }
     }
 

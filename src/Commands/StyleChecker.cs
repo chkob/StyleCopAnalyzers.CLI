@@ -18,6 +18,10 @@ public class StyleChecker
     public string StyleCopJsonFilePath { get; set; } = string.Empty;
     [Option('f', "format", Required = false, Default = "text", HelpText = "output format\n    text raw text\n    xml  legacy stylecop xml format")]
     public string OutputFormat { get; set; } = string.Empty;
+
+    [Option('e', "errors-only", Required = false, Default = false, HelpText = "Print only error in output stream.")]
+    public bool ErrorsOnly { get; set; } = false;
+
     [Value(0, MetaName = "sln/csproj file path, directory path or file path")]
     public IEnumerable<string> Targets { get; set; }
 
@@ -33,22 +37,23 @@ public class StyleChecker
         this.logger = logger;
     }
 
-    public async Task Check(CancellationToken cancellationToken)
+    public async Task<int> Check(CancellationToken cancellationToken)
     {
         RuleSetFilePath = CommandHelper.GetAbsoluteOrDefaultFilePath(RuleSetFilePath, "./stylecop.ruleset");
         StyleCopJsonFilePath = CommandHelper.GetAbsoluteOrDefaultFilePath(StyleCopJsonFilePath, "./stylecop.json");
 
         if (!Targets.Any())
         {
-            return;
+            return 1;
         }
 
-        this.logger.LogDebug("Arguments ============================");
-        this.logger.LogDebug($"ruleset : {RuleSetFilePath}");
-        this.logger.LogDebug($"stylecop.json : {RuleSetFilePath}");
-        this.logger.LogDebug($"format : {OutputFormat}");
-        this.logger.LogDebug($"check : \n{string.Join("\n", Targets)}");
-        this.logger.LogDebug("======================================");
+        this.logger.LogInformation("Arguments ============================");
+        this.logger.LogInformation($"ruleset : {RuleSetFilePath}");
+        this.logger.LogInformation($"stylecop.json : {StyleCopJsonFilePath}");
+        this.logger.LogInformation($"format : {OutputFormat}");
+        this.logger.LogInformation($"error-only : {ErrorsOnly}");
+        this.logger.LogInformation($"check : \n{string.Join("\n", Targets)}");
+        this.logger.LogInformation("======================================");
 
         var projects = ImmutableArray.CreateBuilder<Project>();
         foreach (var target in Targets)
@@ -56,10 +61,10 @@ public class StyleChecker
             var targetFileOrDirectory = CommandHelper.GetAbsolutePath(target);
 
             var inputKind = CommandHelper.GetInputKindFromFileOrDirectory(targetFileOrDirectory);
-            if (!inputKind.HasValue) { return; }
+            if (!inputKind.HasValue) { return 1; }
 
             var readableProjects = inputKind.Value.ToReader().ReadAllSourceCodeFiles(targetFileOrDirectory, StyleCopJsonFilePath);
-            if (readableProjects.Length == 0) { return; }
+            if (readableProjects.Length == 0) { return 1; }
 
             projects.AddRange(readableProjects);
         }
@@ -68,10 +73,10 @@ public class StyleChecker
         if (outputKind == OutputKind.Undefined)
         {
             Console.Error.WriteLine($"output format is undefined. -f {OutputFormat}");
-            return;
+            return 1;
         }
 
-        var analyzerLoader = new AnalyzerLoader(RuleSetFilePath);
+        var analyzerLoader = new AnalyzerLoader(RuleSetFilePath, this.logger);
         var analyzers = analyzerLoader.GetAnalyzers();
         var diagnostics = await CommandHelper.GetAnalyzerDiagnosticsAsync(
             projects.ToImmutable(),
@@ -79,7 +84,34 @@ public class StyleChecker
             analyzerLoader.RuleSets,
             cancellationToken).ConfigureAwait(false);
 
-        var writer = outputKind.ToWriter();
+        // calculate result
+        int result = 0;
+        long info = 0;
+        long warning = 0;
+        long error = 0;
+        foreach (Diagnostic diagnostic in diagnostics)
+        {
+            if (diagnostic.Severity == DiagnosticSeverity.Error)
+            {
+                result = 1;
+                error++;
+            }
+            else if (diagnostic.Severity == DiagnosticSeverity.Warning)
+            {
+                warning++;
+            }
+            else if (diagnostic.Severity == DiagnosticSeverity.Info)
+            {
+                info++;
+            }
+        }
+
+
+        var writer = outputKind.ToWriter(ErrorsOnly);
         writer.Write(diagnostics);
+
+        this.logger.LogInformation("Errors: " + error + ", Warnings: " + warning + ", Infos: " + info);
+
+        return result;
     }
 }

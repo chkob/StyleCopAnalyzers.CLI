@@ -7,7 +7,7 @@ using CommandLine;
 
 internal static class Program
 {
-    static async Task Main(string[] args)
+    static async Task<int> Main(string[] args)
     {
         var cancellationTokenSource = new CancellationTokenSource();
         Console.CancelKeyPress +=
@@ -18,29 +18,35 @@ internal static class Program
             };
 
         var logger = new SimpleConsoleLogger() as ILogger;
+
+        int result = 0;
         try
         {
-            await Parser.Default.ParseArguments<StyleChecker, StyleFixer>(args)
+
+            result = await Parser.Default.ParseArguments<StyleChecker, StyleFixer>(args)
                 .MapResult(
                     async (StyleChecker style) =>
                     {
                         style.SetLogger(logger);
-                        await style.Check(cancellationTokenSource.Token).ConfigureAwait(false);
+                        return await style.Check(cancellationTokenSource.Token).ConfigureAwait(false);
                     },
                     async (StyleFixer style) =>
                     {
                         style.SetLogger(logger);
-                        await style.FixCode(cancellationTokenSource.Token).ConfigureAwait(false);
+                        return await style.FixCode(cancellationTokenSource.Token).ConfigureAwait(false);
                     },
-                    async _ => await Task.Yield())
+                    async _ => await Task.FromResult(1))
                 .ConfigureAwait(false);
         }
         catch (Exception exception)
         {
             logger.LogError(exception.Message);
             logger.LogError(exception.StackTrace!);
+            result = 1;
         }
 
         cancellationTokenSource.Dispose();
+
+        return result;
     }
 }
