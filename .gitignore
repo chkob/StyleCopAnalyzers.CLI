@@ -2,3 +2,6 @@ packages/
 .vscode/
 artifacts/
 .config/
+/src/publish
+/.vs/StyleCopAnalyzers.CLI
+/.vs/ProjectEvaluation
