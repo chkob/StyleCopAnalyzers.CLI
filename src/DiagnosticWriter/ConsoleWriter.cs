@@ -23,7 +23,6 @@ public class ConsoleWriter : IDiagnosticWriter
             {
                 continue;
             }
-            
 
             if (d.Severity == DiagnosticSeverity.Error)
             {
@@ -40,7 +39,6 @@ public class ConsoleWriter : IDiagnosticWriter
 
             Console.WriteLine($"{d.Id} [{d.Severity}] : {d.Location.GetLineSpan().Path} : {d.Location.GetLineSpan().Span.Start.Line + 1}: {d.GetMessage()}");
             Console.ForegroundColor = ConsoleColor.White;
-            
         }
     }
 }
